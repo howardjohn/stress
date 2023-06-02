@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -75,6 +76,9 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	blue := color.New(color.FgBlue).SprintFunc()
+	red := color.New(color.FgRed).SprintFunc()
+	green := color.New(color.FgGreen).SprintFunc()
 	var failureRe, ignoreRe *regexp.Regexp
 	if *flagFailure != "" {
 		var err error
@@ -178,7 +182,7 @@ func main() {
 			if len(res.out) == 0 {
 				if *flagMaxRuns > 0 && runs >= *flagMaxRuns {
 					displayProgress()
-					fmt.Printf("max runs hit, exiting\n")
+					fmt.Printf(green("max runs hit, exiting\n"))
 					if fails > 0 {
 						os.Exit(1)
 					}
@@ -195,23 +199,24 @@ func main() {
 				os.Exit(1)
 			}
 			_ = os.WriteFile(f.Name(), res.out, 0o644)
+			name := blue(f.Name())
 			if len(res.out) > 2<<10 && !*flagFailFast {
-				fmt.Printf("%s\n%s\n…\n", f.Name(), res.out[:2<<10])
+				fmt.Printf("%s\n%s\n…\n", name, res.out[:2<<10])
 			} else {
-				fmt.Printf("%s\n%s\n", f.Name(), res.out)
+				fmt.Printf("%s\n%s\n", name, res.out)
 			}
 			_ = os.Symlink(f.Name(), latestName()) // OK if it doesn't work
 			if *flagFailFast {
-				fmt.Printf("fail fast enabled, exiting\n")
+				fmt.Printf(red("fail fast enabled, exiting\n"))
 				os.Exit(1)
 			}
 			if fails >= *flagLimit {
-				fmt.Printf("failure limit hit, exiting\n")
+				fmt.Printf(red("failure limit hit, exiting\n"))
 				os.Exit(1)
 			}
 			if *flagMaxRuns > 0 && runs >= *flagMaxRuns {
 				displayProgress()
-				fmt.Printf("max runs hit, exiting\n")
+				fmt.Printf(green("max runs hit, exiting\n"))
 				if fails > 0 {
 					os.Exit(1)
 				}
@@ -219,7 +224,7 @@ func main() {
 			}
 		case <-terminate:
 			displayProgress()
-			fmt.Printf("max time hit, exiting\n")
+			fmt.Printf(green("max time hit, exiting\n"))
 			if fails > 0 {
 				os.Exit(1)
 			}
