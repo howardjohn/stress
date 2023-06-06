@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/fatih/color"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,6 +27,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 var (
@@ -205,7 +206,10 @@ func main() {
 			} else {
 				fmt.Printf("%s\n%s\n", name, res.out)
 			}
-			_ = os.Symlink(f.Name(), latestName()) // OK if it doesn't work
+			// OK if it doesn't work
+			// This is also racy - no problem, one will win.
+			_ = os.Remove(latestName())
+			_ = os.Symlink(f.Name(), latestName())
 			if *flagFailFast {
 				fmt.Printf(red("fail fast enabled, exiting\n"))
 				os.Exit(1)
